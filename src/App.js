@@ -1,75 +1,205 @@
-import './App.css';
-import fetch from 'cross-fetch';
-import React,{useState} from 'react'
-import {Card,Button} from "react-bootstrap";
-import {TwitterTweetEmbed} from "react-twitter-embed";
-import format from 'date-fns/format';
-
+import "./App.css";
+import fetch from "cross-fetch";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Card,
+  Button,
+  Spinner,
+  Container,
+  Row,
+  Col,
+  FormControl,
+  InputGroup,
+} from "react-bootstrap";
+import twitterlogo from "./twitter.svg";
+import Banner from "./components/Banner";
+import Filters from "./components/Filters";
+import Entrants from "./components/Entrants";
+import TweetPreview from "./components/TweetPreview";
 function App() {
+  const [retweets, setRetweets] = useState();
+  const [currentTweet, setCurrentTweet] = useState(null);
 
-  const [tweets,setTweets] = useState(null);
+  const [loadingPreviewTweet, setLoadingPreviewTweet] = useState(false);
+  const [loadingRetweets, setLoadingRetweets] = useState(false);
 
-  //const compid = "1490746602964852744";
+  const [amountOfWinners, setAmountOfWinners] = useState(0);
+
+  const checkUrlRef = useRef(null);
+  const checkWinnersRef = useRef(null);
+
+  const compid = "1490746602964852744";
 
   const retweets200 = "903709298902970368";
 
-  //const ellentweet2mil = "440322224407314432";
+  // const ellentweet2mil = "440322224407314432";
 
-  const fetchTweets = async(tweetid) => {
+  useEffect(() => {
+    setLoadingPreviewTweet(false);
+  }, [currentTweet]);
+  useEffect(() => {
+    setLoadingRetweets(false);
+  }, [retweets]);
 
-  const url = `http://127.0.0.1:5500/`;
+  const fetchRetweets = async (tweetid) => {
+    setCurrentTweet(tweetid);
+    const url = `http://127.0.0.1:5500/`;
 
-  const config = {method : "POST", headers:{ 'Content-Type': 'application/json',"Access-Control-Allow-Origin" : true}, body: JSON.stringify({ "tweetid" : `${tweetid}`}) };
+    const config = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": true,
+      },
+      body: JSON.stringify({ tweetid: `${tweetid}` }),
+    };
+    setLoadingRetweets(true);
+    try {
+      const tweets = await fetch(url, config);
+      const tweetsJson = await tweets.json();
+      setRetweets(tweetsJson);
+    } catch (err) {
+      setLoadingRetweets(false);
+    }
+  };
 
-    try{
-      const tweets = await fetch(url,config);
+  const removeOriginalTweeter = (tweets) => {
+    if (tweets == null) {
+      console.log("no tweets found");
+    }
+  };
+
+  const loadTweet = async (tweetid) => {
+    const url = `http://127.0.0.1:5500/valid`;
+    const config = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": true,
+      },
+      body: JSON.stringify({ tweetid: `${tweetid}` }),
+    };
+    try {
+      const tweets = await fetch(url, config);
       const tweetsJson = await tweets.json();
 
-      console.log(tweetsJson);
-      console.log(tweetsJson.length);
-      setTweets(tweetsJson);
-      // return tweetsJson;
-    }catch(err){
-      console.log(err.data);
-      // return { Error : "no tweet found"}
+      const result = tweetsJson["data"][0]["id"];
+
+      if (result === undefined) return null;
+      else return result;
+    } catch (err) {
+      console.log("no tweet");
+      return false;
     }
-  }
+  };
 
-  const displayTweets = () => {
-
-
-    if(tweets !== null && tweets !== undefined){
-      
-      return tweets.map(tweet =>
-      <Card key={tweet.id}style={{ width: '18rem'}} bg="success">
-        <Card.Body>
-        <Card.Title>{tweet.username}</Card.Title>
-        <Card.Text>
-            {tweet.id}
-            {tweet.created_at}
-        </Card.Text>
-        </Card.Body>
-      </Card>);
-    }else{
-      return <h1>no tweets</h1>
+  const setPreviewTweet = async (tweet) => {
+    if (!tweet) {
+      setCurrentTweet(null);
+      return;
     }
-  }
+    setLoadingPreviewTweet(true);
+    let url = tweet;
+    url = url.replace(/\D/g, "");
+    const checkedTweet = await loadTweet(url);
+    if (checkedTweet !== null) setCurrentTweet(checkedTweet);
+  };
 
+  const randomNumber = (max) => {
+    return Math.floor(Math.random() * max);
+  };
   return (
-    <div className="App">
-      <header className="container">
-        <div className="AppBody">
-          <div style={{width:"50%"}}>
-          <TwitterTweetEmbed style={{width: "auto"}} tweetId={retweets200}/>
-          </div>
-          <div>
-          <Button variant="success" type="submit" onClick={() => fetchTweets(retweets200)}>LOAD RETWEETS</Button>
-          {displayTweets()}
-          </div>
-        </div>
-      </header>
-    </div>
+    <Container
+      fluid="md"
+      className="bg-dark text-white text-center min-vh-100 min-vw-100"
+    >
+      <Banner />
+      <Row>
+        {/* TWEET PREVIEW */}
+        <Col xl={6} className="bg-primary d-flex justify-content-center">
+          {loadingPreviewTweet ? (
+            <div className="m-auto">
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            </div>
+          ) : currentTweet !== null ? (
+            <TweetPreview tweet={currentTweet} />
+          ) : (
+            <img src={twitterlogo} style={{ width: 150 }}></img>
+          )}
+        </Col>
+
+        {/* SETTINGS */}
+        <Col xl={6} className="text-center bg-warning text-dark ">
+          <Row className="text-center text-dark justify-content-center px-5">
+            haz{compid}
+            <br></br>
+            retweet{retweets200}
+            <Button
+              bg="primary"
+              onClick={() => {
+                setPreviewTweet();
+                setRetweets([]);
+              }}
+            >
+              Remove Tweet
+            </Button>
+            <InputGroup className="p-0 m-3">
+              <FormControl
+                ref={checkUrlRef}
+                placeholder="Twitter Link"
+                aria-label="Twitter Link"
+              />
+              <Button
+                bg="primary"
+                onClick={() => setPreviewTweet(checkUrlRef.current.value)}
+              >
+                Set Tweet
+              </Button>
+            </InputGroup>
+            <FormControl
+              type="number"
+              ref={checkWinnersRef}
+              onChange={() => setAmountOfWinners(checkWinnersRef.current.value)}
+              placeholder="0"
+              aria-label="Winners"
+            />
+            {loadingRetweets ? (
+              <div className="m-auto">
+                <Spinner animation="border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </Spinner>
+              </div>
+            ) : (
+              <Button
+                variant="danger"
+                style={{
+                  width: 250,
+                  height: 100,
+                  fontSize: 25,
+                  margin: 25,
+                }}
+                type="submit"
+                onClick={() => fetchRetweets(currentTweet)}
+                disabled={amountOfWinners < 1}
+              >
+                SELECT WINNER{amountOfWinners > 1 ? "S" : ""}
+              </Button>
+            )}
+          </Row>
+          <Row
+            className="bg-danger justify-content-center"
+            style={{ height: 300 }}
+          >
+            row
+          </Row>
+          {/* {retweets ? <Entrants entrants={retweets} /> : ""} */}
+          {/* current loaded tweet : {currentTweet} */}
+        </Col>
+      </Row>
+    </Container>
   );
 }
-
+// https://twitter.com/Lethal_HT/status/1490746602964852744
 export default App;

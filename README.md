@@ -1,3 +1,3 @@
-# Learning to use twitter api for
+# Learning to use twitter api
 
 Just testing out the twitter api
