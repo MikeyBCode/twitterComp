@@ -1,7 +1,7 @@
-import React from 'react'
+import React from "react";
 
 export const Banner = () => {
-    return <div className="banner">banner placeholder</div>
-}
+  return <div className="banner"></div>;
+};
 
 export default Banner;

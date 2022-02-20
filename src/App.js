@@ -144,17 +144,17 @@ function App() {
             <InputGroup className="p-0 m-3">
               <FormControl
                 ref={checkUrlRef}
-                placeholder="Twitter Link"
+                placeholder="TWEET ID"
                 aria-label="Twitter Link"
               />
               <Button
                 bg="primary"
                 onClick={() => setPreviewTweet(checkUrlRef.current.value)}
               >
-                Set Tweet
+                Set Tweet ID
               </Button>
             </InputGroup>
-            <FormControl
+            {/* <FormControl
               type="number"
               ref={checkWinnersRef}
               onChange={() =>
@@ -162,7 +162,7 @@ function App() {
               }
               placeholder="0"
               aria-label="Winners"
-            />
+            /> */}
             {loadingRetweets ? (
               <div className="m-auto">
                 <Spinner animation="border" role="status">
@@ -180,15 +180,13 @@ function App() {
                 }}
                 type="submit"
                 onClick={() => fetchRetweets()}
-                disabled={amountOfWinners < 1}
+                disabled={currentTweet === null}
               >
                 COLLECT RETWEETERS{amountOfWinners > 1 ? "S" : ""}
               </Button>
             )}
           </Row>
           <Row className="bg-danger justify-content-center">
-            current loaded tweet :
-            {currentTweet == null ? "undefined" : currentTweet["author_id"]}
             {retweets && (
               <WinnersDisplay
                 mainTweet={currentTweet}
