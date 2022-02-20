@@ -79,6 +79,7 @@ function App() {
 
   const setPreviewTweet = async (tweet) => {
     if (tweet === "" || tweet === undefined) {
+      setLoadingRetweets(false);
       return;
     }
     setLoadingPreviewTweet(true);

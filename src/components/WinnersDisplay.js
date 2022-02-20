@@ -92,7 +92,7 @@ export const WinnersDisplay = ({ entrants, mainTweet, winners }) => {
 
   return (
     <>
-      {loadingWinner ? (
+      {loadingWinner && entries.length > 0 ? (
         <div className="m-auto">
           <Spinner animation="border" role="status">
             <span className="visually-hidden">Loading...</span>
