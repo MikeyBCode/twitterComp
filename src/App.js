@@ -21,10 +21,10 @@ function App() {
   const [loadingPreviewTweet, setLoadingPreviewTweet] = useState(false);
   const [loadingRetweets, setLoadingRetweets] = useState(false);
 
-  const [amountOfWinners, setAmountOfWinners] = useState(0);
+  // const [amountOfWinners, setAmountOfWinners] = useState(0);
 
   const checkUrlRef = useRef(null);
-  const checkWinnersRef = useRef(null);
+  // const checkWinnersRef = useRef(null);
 
   useEffect(() => {
     setLoadingPreviewTweet(false);
@@ -84,8 +84,14 @@ function App() {
     }
     setLoadingPreviewTweet(true);
     let url = tweet;
-    url = url.replace(/\D/g, "");
-    if (currentTweet !== null && tweet === currentTweet["id"]) {
+    const regex = new RegExp(`[0-9]{6,}`);
+
+    url = regex.exec(url);
+    url = url[0];
+    if (
+      (currentTweet !== null && tweet === currentTweet["id"]) ||
+      url === null
+    ) {
       setLoadingPreviewTweet(false);
       return;
     }
@@ -130,10 +136,10 @@ function App() {
         </Col>
 
         {/* SETTINGS */}
-        <Col xl={6} className="text-center bg-dark text-dark ">
+        <Col xl={6} className="text-center bg-dark text-dark p-5">
           <Row className="text-center text-light justify-content-center">
             <Button
-              bg="primary"
+              bg="danger"
               onClick={() => {
                 setCurrentTweet(null);
                 setRetweets(null);
@@ -151,7 +157,7 @@ function App() {
                 bg="primary"
                 onClick={() => setPreviewTweet(checkUrlRef.current.value)}
               >
-                Set Tweet ID
+                SET TWEET URL/ID
               </Button>
             </InputGroup>
             {/* <FormControl
@@ -182,17 +188,13 @@ function App() {
                 onClick={() => fetchRetweets()}
                 disabled={currentTweet === null}
               >
-                COLLECT RETWEETERS{amountOfWinners > 1 ? "S" : ""}
+                COLLECT RETWEETERS
               </Button>
             )}
           </Row>
           <Row className="bg-danger justify-content-center">
             {retweets && (
-              <WinnersDisplay
-                mainTweet={currentTweet}
-                entrants={retweets}
-                winners={amountOfWinners}
-              />
+              <WinnersDisplay mainTweet={currentTweet} entrants={retweets} />
             )}
           </Row>
         </Col>
