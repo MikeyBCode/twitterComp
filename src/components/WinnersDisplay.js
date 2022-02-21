@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import Entrant from "./Entrant";
 
-export const WinnersDisplay = ({ entrants, mainTweet, winners }) => {
+export const WinnersDisplay = ({ entrants, mainTweet }) => {
   const [entries, setEntries] = useState(entrants);
 
   const [selectedWinners, setSelectedWinners] = useState([]);
@@ -32,23 +32,25 @@ export const WinnersDisplay = ({ entrants, mainTweet, winners }) => {
     }
   };
 
-  const isPossibleBot = async (previousTweets) => {
+  const getRecentRetweetCount = async (previousTweets) => {
     let retweets = 0;
-    const maxRetweets = 2;
 
     previousTweets.forEach((tweet) => {
       if (tweet.text.toLowerCase().search("giveaway") !== -1) retweets += 1;
+      console.log(tweet.text.toLowerCase());
+      console.log(tweet.id);
+      console.log(tweet.text.toLowerCase().search("giveaway"));
     });
 
-    if (retweets > maxRetweets) return true;
-    else return false;
+    return retweets;
   };
 
   const verifyUserId = async (userid) => {
     try {
       const last10 = await getLast10Tweets(userid);
-      const isBot = await isPossibleBot(last10);
-      return isBot;
+      const retweetCount = await getRecentRetweetCount(last10);
+      console.log(retweetCount);
+      return retweetCount;
     } catch (err) {
       return false;
     }
@@ -64,7 +66,7 @@ export const WinnersDisplay = ({ entrants, mainTweet, winners }) => {
         <Entrant
           key={entrant[0].id}
           entry={entrant[0]}
-          isValid={entrant["isBot"] == null}
+          retweetCount={entrant["retweetCount"]}
         />
       ));
     } else {
@@ -79,9 +81,10 @@ export const WinnersDisplay = ({ entrants, mainTweet, winners }) => {
     const selectedWinner = arr.splice(randomNum(entries.length), 1);
 
     setEntries(arr);
-    const isPossibleBot = await verifyUserId(selectedWinner[0].id);
+    console.log(selectedWinner === undefined);
+    const retweetCount = await verifyUserId(selectedWinner[0].id);
 
-    if (isPossibleBot) selectedWinner["isBot"] = true;
+    selectedWinner["retweetCount"] = retweetCount;
 
     const winners = [...selectedWinners];
 
